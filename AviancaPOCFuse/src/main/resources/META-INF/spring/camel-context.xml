@@ -27,7 +27,7 @@
         <from uri="file:src/data/inbox?noop=true"/>
         <split timeout="0" parallelProcessing="true" id="PartirArchivo">
             <tokenize token="\n"></tokenize>
-            <to uri="file:target/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>
         </split>
     </route>
 </camelContext>
