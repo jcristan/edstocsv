@@ -21,11 +21,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.fusesource.byexample</groupId>
-    <artifactId>FileBatchSplitter</artifactId>
+    <artifactId>AviancaPOC</artifactId>
     <packaging>bundle</packaging>
     <version>1.0.1</version>
 
-    <name>File Batch Splitter</name>
+    <name>Avianca POC</name>
 
     <organization>
         <name>Red Hat</name>
