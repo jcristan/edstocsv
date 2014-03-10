@@ -28,7 +28,7 @@
         <split timeout="0" streaming="true" parallelProcessing="true" id="PartirArchivo">
             <tokenize includeTokens="true" endToken="UNT" token="UNH" />                             
             <transform>
-	                <simple>${body}\n${body}</simple>
+	                <simple>${body.replaceAll("", "X")}\n${body}</simple>
 	        </transform>       
             <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>
             <log message="\n${body}"/>
