@@ -23,11 +23,14 @@
        ">
 
     <camelContext xmlns="http://camel.apache.org/schema/spring">
-    <route id="FileBatchSplitterRoute">
+    <route id="AviancaFileRoute">
         <from uri="file:src/data/inbox?noop=true"/>
-        <split timeout="0" parallelProcessing="true" id="PartirArchivo">
-            <tokenize token="\n"></tokenize>
+        <split timeout="0" parallelProcessing="true" id="PartirArchivo" streaming="true">
+            <tokenize token="UNH" includeTokens="true" endToken="UNT" group="50">            
+            </tokenize>
+            
             <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>
+            <log message="\n${body}"/>
         </split>
     </route>
 </camelContext>
