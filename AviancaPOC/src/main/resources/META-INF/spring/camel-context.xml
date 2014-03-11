@@ -17,28 +17,70 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:camel="http://camel.apache.org/schema/spring"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
-       ">
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+       
+       	<import resource="jmsSetup.xml" />
 
 	<bean id="procesarASCII" class="com.avianca.procesarASCII"/>
 	
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
     <route id="AviancaSplitFile">
         <from uri="file:src/data/inbox?noop=true"/>
-        <split timeout="0" streaming="true" parallelProcessing="false" id="divisionGrande">
+        <split timeout="0" streaming="true" parallelProcessing="true" id="divisionGrande">
             <description>&lt;to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/&gt;</description>
-            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
-            <to uri="file:src/data/temp?fileName=${date:now:yyyyMMddHHmmssSSSS}.data" id="ediTemporal"/>
+		    <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+			<loadBalance>
+				<roundRobin />
+				<to uri="jms:queue:EDIAvianca1" />
+				<to uri="jms:queue:EDIAvianca2" />
+				<to uri="jms:queue:EDIAvianca3" />
+				<to uri="jms:queue:EDIAvianca4" />
+			</loadBalance>            
+            <!-- <to uri="file:src/data/temp?fileName=${date:now:yyyyMMddHHmmssSSSS}.data" id="ediTemporal"/> -->
         </split>
     </route>
     <route id="AviancaTransformFiles">
-        <from uri="file:src/data/temp?noop=true"/>
-        <split timeout="0" streaming="true" parallelProcessing="false" id="divisionIntermedia">
+    	<from uri="jms:queue:EDIAvianca1" />
+       <!--  <from uri="file:src/data/temp?noop=true"/> -->
+        <split timeout="0" streaming="true" parallelProcessing="true" id="divisionIntermedia">
             <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
             <bean ref="procesarASCII"/>
-            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}.csv" id="csvFinal"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}1.csv" id="csvFinal"/>
+        </split>
+    </route>
+    
+        <route id="AviancaTransformFiles2">
+    	<from uri="jms:queue:EDIAvianca2" />
+       <!--  <from uri="file:src/data/temp?noop=true"/> -->
+        <split timeout="0" streaming="true" parallelProcessing="true" id="divisionIntermedia2">
+            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+            <bean ref="procesarASCII"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}2.csv" id="csvFinal2"/>
+        </split>
+    </route>
+    
+        <route id="AviancaTransformFiles3">
+    	<from uri="jms:queue:EDIAvianca3" />
+       <!--  <from uri="file:src/data/temp?noop=true"/> -->
+        <split timeout="0" streaming="true" parallelProcessing="true" id="divisionIntermedia3">
+            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+            <bean ref="procesarASCII"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}3.csv" id="csvFinal3"/>
+        </split>
+    </route>
+    
+        <route id="AviancaTransformFiles4">
+    	<from uri="jms:queue:EDIAvianca4" />
+       <!--  <from uri="file:src/data/temp?noop=true"/> -->
+        <split timeout="0" streaming="true" parallelProcessing="true" id="divisionIntermedia4">
+            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+            <bean ref="procesarASCII"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}4.csv" id="csvFinal4"/>
         </split>
     </route>
 </camelContext>
