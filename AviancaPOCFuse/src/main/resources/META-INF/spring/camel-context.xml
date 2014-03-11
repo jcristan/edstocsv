@@ -22,16 +22,17 @@
         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        ">
 
+	<bean id="procesarASCII" class="com.avianca.procesarASCII"/>
+	
     <camelContext xmlns="http://camel.apache.org/schema/spring">
     <route id="AviancaFileRoute">
         <from uri="file:src/data/inbox?noop=true"/>
-        <split timeout="0" streaming="true" parallelProcessing="true" id="PartirArchivo">
-            <tokenize includeTokens="true" endToken="UNT" token="UNH" />                             
-            <transform>
-	                <simple>${body.replaceAll("", "X")}\n${body}</simple>
-	        </transform>       
-            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>
-            <log message="\n${body}"/>
+        <split timeout="0" streaming="true" parallelProcessing="false" id="PartirArchivo">
+            <tokenize includeTokens="true" endToken="UNT" token="UNH"/>
+            <bean ref="procesarASCII"/>            
+            <!-- lg message="\r\n${body}"/>-->
+            <!-- <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>-->
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmm}.csv&amp;fileExist=Append" id="ediFile"/>
         </split>
     </route>
 </camelContext>
