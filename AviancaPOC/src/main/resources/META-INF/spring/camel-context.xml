@@ -24,16 +24,24 @@
 
 	<bean id="procesarASCII" class="com.avianca.procesarASCII"/>
 	
-    <camelContext xmlns="http://camel.apache.org/schema/spring">
-    <route id="AviancaFileRoute">
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+    <route id="AviancaSplitFile">
         <from uri="file:src/data/inbox?noop=true"/>
-        <split timeout="0" streaming="true" parallelProcessing="false" id="PartirArchivo">
-            <tokenize includeTokens="true" endToken="UNT" token="UNH"/>
-            <bean ref="procesarASCII"/>            
-            <!-- lg message="\r\n${body}"/>-->
-            <!-- <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/>-->
-            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmm}.csv&amp;fileExist=Append" id="ediFile"/>
+        <split timeout="0" streaming="true" parallelProcessing="false" id="divisionGrande">
+            <description>&lt;to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSSS}.data" id="ediFile"/&gt;</description>
+            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+            <to uri="file:src/data/temp?fileName=${date:now:yyyyMMddHHmmssSSSS}.data" id="ediTemporal"/>
+        </split>
+    </route>
+    <route id="AviancaTransformFiles">
+        <from uri="file:src/data/temp?noop=true"/>
+        <split timeout="0" streaming="true" parallelProcessing="false" id="divisionIntermedia">
+            <tokenize group="5000" includeTokens="true" endToken="UNT" token="UNH"></tokenize>
+            <bean ref="procesarASCII"/>
+            <to uri="file:src/data/outbox?fileName=${date:now:yyyyMMddHHmmssSSSS}.csv" id="csvFinal"/>
         </split>
     </route>
 </camelContext>
+	
+	
 </beans>
